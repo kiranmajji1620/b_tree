@@ -23,16 +23,23 @@ private:
     void splitChild(BTreeNode<T, ORDER>* x, int i){
         BTreeNode<T, ORDER>* y = x -> children[i];
         BTreeNode<T, ORDER>* z = new BTreeNode<T, ORDER>(y -> leaf);
-        z -> n = ORDER/2 - 1;// the no of keys in z.
-        for(int j = 0; j < ORDER/2 - 1; j++){ // In case of odd no of keys, we start at the middle element. right half in case of even elements.
+        // In case of odd order like 5, the no of keys will be 4. {10, 20, 30, 40} will split into {10} and {30, 40}.
+        // In case of even order like 6, the no of keys will be 5. {10, 20, 30, 40, 50} will split into {10, 20} and {40, 50}.
+        if(ORDER%2){
+            z -> n = ORDER/2;
+        }
+        else {
+            z -> n = ORDER/2 - 1;
+        }
+        y -> n = ORDER/2 - 1; // just change the no of keys instead of removing them.
+        for(int j = 0; j < z -> n; j++){ // In case of odd no of keys, we start at the middle element. right half in case of even elements.
             z -> keys[j] = y -> keys[j + ORDER/2];
         }
         if(!y -> leaf){ // In case y is an internal node, transfer the children of y to z.
-            for(int j = 0; j < ORDER/2; j++){
+            for(int j = 0; j < z -> n + 1; j++){
                 z -> children[j] = y -> children[j + ORDER/2];
             }
         }
-        y -> n = ORDER/2 - 1; // just change the no of keys instead of removing them.
         for(int j = x -> n; j >= i + 1; j--){ // Here, we are shifting the childrens by 1 towards right side.
             x -> children[j + 1] = x -> children[j];
         }
@@ -74,7 +81,7 @@ private:
         int i;
         for(i = 0; i < x -> n; i++){
             if(!x -> leaf){
-                cout << "Traversing to child " << x -> keys[i] << endl;
+                // cout << "Traversing to child " << x -> keys[i] << endl;
                 traverse(x -> children[i]);
             }
             cout << x -> keys[i] << " ";
@@ -82,14 +89,15 @@ private:
         if(!x -> leaf){ // Traversing the last sub tree.
             traverse(x -> children[i]);
         }
-        cout << "completed one level" << endl;
+        // cout << endl;
+        // cout << "completed one level" << endl;
     }
 public:
     BTree() {
         root = new BTreeNode<T, ORDER> (true);
     }
     void insert(T k){
-        cout << "current children in root :  " << root -> keys[0] << endl;
+        // cout << "current children in root :  " << root -> keys[0] << endl;
         if(root -> n == ORDER - 1){
             BTreeNode<T, ORDER>* s = new BTreeNode<T, ORDER>(false);
             s -> children[0] = root;

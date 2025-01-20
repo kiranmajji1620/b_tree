@@ -2,7 +2,7 @@
 #include"binary_tree.h"
 
 int main(){
-    BTree<int, 3> t;
+    BTree<int, 5> t;
     t.insert(10);
     t.insert(20);
     t.insert(5);
