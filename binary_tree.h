@@ -92,6 +92,21 @@ private:
         // cout << endl;
         // cout << "completed one level" << endl;
     }
+    BTreeNode<T, ORDER>* search(BTreeNode<T, ORDER>* x, T k){
+        int i = 0;
+        while(i < x -> n && k > x -> keys[i]){
+            i++;
+        }
+        // we are now at a point where keys[i] might be equal to or greater than k.
+        // if equal, return current node. else if current node is leaf, return null else search in the possible node.
+        if(i < x -> n && k == x -> keys[i]){
+            return x;
+        }
+        if(x -> leaf){
+            return nullptr;
+        }
+        return search(x -> children[i], k);
+    }
 public:
     BTree() {
         root = new BTreeNode<T, ORDER> (true);
@@ -113,6 +128,16 @@ public:
         // cout << "root " << root -> keys[0] << endl;
         if(root){
             traverse(root);
+        }
+        cout << endl;
+    }
+    void search(T k){
+        BTreeNode<T, ORDER>* nodeFound = search(root, k);
+        if(search(root, k)){
+            cout << "We have found the value at " << nodeFound << endl;
+        }
+        else {
+            cout << "Couldn't find the value." << endl;
         }
     }
 };

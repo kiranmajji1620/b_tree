@@ -13,6 +13,11 @@ int main(){
     t.insert(17);
     cout << "Traversal of B Tree : " << endl;
     t.traverse();
+
+    int value = 17;
+    t.search(value);
+    value = 18;
+    t.search(value);
     cout << endl;
     return 0;
 }
