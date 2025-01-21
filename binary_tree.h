@@ -1,6 +1,6 @@
 #include <iostream>
 using namespace std;
-
+#include <bits/stdc++.h>
 template <typename T, int ORDER> // to keep the b tree generic. Order is the max no of children in a node.
 class BTreeNode {
 public:
@@ -313,6 +313,32 @@ public:
                 root = root -> children[0];
             }
             delete temp;
+        }
+    }
+    void BFS() {
+        if(!root){
+            cout << "Empty tree" << endl;
+            return;
+        }
+        queue<BTreeNode<T, ORDER>*> que;
+        que.push(root);
+        while(!que.empty()){
+            int noOfNodes = que.size();
+            for(int i = 0; i < noOfNodes; i++){
+                BTreeNode<T, ORDER>* tempNode = que.front();
+                que.pop();
+                int noOfKeys = tempNode -> n;
+                for(int i = 0; i < noOfKeys; i++){
+                    cout << tempNode -> keys[i] << " ";
+                }
+                for(int i = 0; i < noOfKeys + 1; i++){
+                    if(tempNode -> children[i]){
+                        que.push(tempNode -> children[i]);
+                    }
+                }
+                cout << "\t|\t";
+            }
+            cout << endl << endl;
         }
     }
 };

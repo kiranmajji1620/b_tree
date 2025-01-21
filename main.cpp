@@ -18,28 +18,15 @@ int main(){
     t.insert(3);
     cout << "Traversal of B Tree : " << endl;
     t.traverse();
+
+    cout << "Breadth first traversal" << endl;
+    t.BFS();
     cout << "Removing 15" << endl;
     t.remove(15);
+    t.BFS();
     t.traverse();
-
-    // cout << "Removing 12" << endl;
-    // t.remove(12);
-    // t.traverse();
-
-    // cout << "Removing 20" << endl;
-    // t.remove(20);
-    // t.traverse();
-
-    // cout << "Removing 90" << endl;
-    // t.remove(90);
-    // t.traverse();
-
-
-    int value = 17;
-    t.search(value);
-    value = 18;
-    t.search(value);
+    // int value = 17;
+    // t.search(value);
     cout << endl;
-
     return 0;
 }
