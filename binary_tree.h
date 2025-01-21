@@ -107,6 +107,74 @@ private:
         }
         return search(x -> children[i], k);
     }
+
+    T getPredecessor(BTreeNode<T, ORDER>* node, int ind){
+        BTreeNode<T, ORDER>* currentChild = node -> children[ind]; // left child of the key present at ind.
+        while(!currentChild -> leaf){
+            currentChild = currentChild->children[currentChildren -> n]; // go to the last element of the current child
+        }
+        return currentChild -> keys[currentChild -> n - 1];
+    }
+
+    T getSuccesor(BTreeNode<T, ORDER>* node, int ind){
+        BTreeNode<T, ORDER>* currentChild = node -> children[ind + 1];
+        while(!currentChild -> leaf){
+            currentChild = currentChild -> children[0];
+        }
+        return currentChild -> keys[0];
+    }
+
+    void borrowFromPrev(BTreeNode<T, ORDER>* node, int ind){
+        BTreeNode<T, ORDER>* child = node -> children[ind];
+        BTreeNode<T, ORDER>* sibling = node -> children[ind - 1];
+        for(int i = child -> n - 1; i >= 0; i--){
+            child -> keys[i + 1] = child -> keys[i];
+        }
+        if(!child -> leaf){
+            for(int i = child -> n; i >= 0; i--){
+                child -> children[i + 1] = child -> children[i];
+            }
+        }
+        child -> keys[0] = node -> keys[ind - 1];
+        if(!child -> leaf){
+            child -> children[0] = sibling -> children[sibling -> n];
+        }
+        node -> keys[ind - 1] = sibling -> keys[sibling -> n - 1];
+        sibing -> n -= 1;
+        child -> n += 1;
+    }
+
+    void borrowFromNext(BTreeNode<T, ORDER>* node, int ind){
+        BTreeNode<T, ORDER>* child = node -> children[ind];
+        BTreeNode<T, ORDER>* sibling = node -> children[ind + 1];
+        child -> keys[child -> n] = node -> keys[ind];
+        if(!child -> leaf){
+            child -> children[child -> n + 1] = sibling -> children[0];
+        }
+        node -> keys[ind] = sibling -> keys[0];
+        for(int i = 1; i < sibling -> n; i++){
+            sibling -> keys[i - 1] = sibling -> keys[i];
+        }
+        if(!sibling -> leaf){
+            for(int i = 1; i <= sibling -> n; i++){
+                sibling -> children[i - 1] = sibling -> children[i];
+            }
+        }
+        sibling -> n -= 1;
+        child -> n += 1;
+    }
+    //Removing a key from a node.
+    void removeFromLeaf(BTreeNode<T, ORDER>* node, int ind){
+        for(int i = ind + 1; i < node -> n; i++){
+            node -> keys[i - 1] = node -> keys[i];
+        }
+        node -> n--;
+        return;
+    }
+
+    void remove(int k){
+        int ind = findKey(k);
+    }
 public:
     BTree() {
         root = new BTreeNode<T, ORDER> (true);
@@ -139,5 +207,13 @@ public:
         else {
             cout << "Couldn't find the value." << endl;
         }
+    }
+    void remove(T k){
+        if(!root){
+            cout << "Cannot remove from an empty tree" << endl;
+            return;
+        }
+        remove(root, k);
+        // What if root -> n == 0???
     }
 };
