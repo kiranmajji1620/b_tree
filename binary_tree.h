@@ -53,7 +53,7 @@ private:
 
     void insertNonFull(BTreeNode<T, ORDER>* x, T k){
         int i = x -> n - 1;
-        if(x -> leaf){
+        if(x -> leaf){ // If we are at leaf, just insert the key.
             while(i >= 0 && k < x -> keys[i]){
                 x -> keys[i + 1] = x -> keys[i];
                 i--;
@@ -67,7 +67,7 @@ private:
                 i--;
             }
             i++; // This key should be put in x->children[i].
-            if(x -> children[i] -> n == ORDER - 1){
+            if(x -> children[i] -> n == ORDER - 1){ // In case of when the subtree root node that contains the child is full, split it and push to the right node.We do this to ensure not going back upwards when the split happens at the leaf.
                 splitChild(x, i);
                 if(k > x -> keys[i]){
                     i++;
@@ -111,7 +111,7 @@ private:
     T getPredecessor(BTreeNode<T, ORDER>* node, int ind){
         BTreeNode<T, ORDER>* currentChild = node -> children[ind]; // left child of the key present at ind.
         while(!currentChild -> leaf){
-            currentChild = currentChild->children[currentChildren -> n]; // go to the last element of the current child
+            currentChild = currentChild->children[currentChild -> n]; // go to the last element of the current child
         }
         return currentChild -> keys[currentChild -> n - 1];
     }
@@ -122,6 +122,23 @@ private:
             currentChild = currentChild -> children[0];
         }
         return currentChild -> keys[0];
+    }
+
+    void fill(BTreeNode<T, ORDER>* node, int ind){
+        if(ind != 0 && (node -> children[ind - 1]->n) >= ORDER/2){
+            borrowFromPrev(node, ind);
+        }
+        else if(ind != node -> n && (node -> children[ind + 1]->n) >= ORDER/2){
+            borrowFromNext(node, ind);
+        }
+        else {
+            if(ind != node -> n){
+                merge(node, ind);
+            }
+            else {
+                merge(node, ind - 1);
+            }
+        }
     }
 
     void borrowFromPrev(BTreeNode<T, ORDER>* node, int ind){
@@ -140,7 +157,7 @@ private:
             child -> children[0] = sibling -> children[sibling -> n];
         }
         node -> keys[ind - 1] = sibling -> keys[sibling -> n - 1];
-        sibing -> n -= 1;
+        sibling -> n -= 1;
         child -> n += 1;
     }
 
@@ -163,17 +180,89 @@ private:
         sibling -> n -= 1;
         child -> n += 1;
     }
+
+    void merge(BTreeNode<T, ORDER>* node, int ind){
+        BTreeNode<T, ORDER>* child = node -> children[ind];
+        BTreeNode<T, ORDER>* sibling = node -> children[ind + 1];
+
+        int n = child -> n;
+        child -> keys[n] = node -> keys[ind];
+        for(int i = 0; i < sibling -> n; i++){
+            child -> keys[n + i + 1] = sibling -> keys[i];
+        }
+        if(!child -> leaf){
+            for(int i = 0; i <= sibling -> n; i++){
+                child -> children[n + i + 1] = sibling -> children[i];
+            }
+        }
+        for(int i = ind + 1; i < node -> n; i++){
+            node -> keys[i - 1] = node -> keys[i];
+        }
+        for(int i = ind + 2; i <= node -> n; i++){
+            node -> children[i - 1] = node -> children[i];
+        }
+        child -> n += sibling -> n + 1; // because we merged both children and we also pushed the parent key.
+        node -> n--;
+        delete sibling;
+    }
+
+    void removeFromNonLeaf(BTreeNode<T, ORDER>* node, int ind){
+        T k = node -> keys[ind];
+        if(node -> children[ind]->n >= ORDER/2){
+            T pred = getPredecessor(node, ind);
+            node -> keys[ind] = pred;
+            remove(node -> children[ind], pred);
+        }
+        else if(node -> children[ind + 1] -> n >= ORDER/2){
+            T succ = getSuccesor(node, ind);
+            node -> keys[ind] = succ;
+            remove(node -> children[ind + 1], succ);
+        }
+        else {
+            merge(node, ind);
+            remove(node -> children[ind], k);
+        }
+    }
     //Removing a key from a node.
     void removeFromLeaf(BTreeNode<T, ORDER>* node, int ind){
         for(int i = ind + 1; i < node -> n; i++){
             node -> keys[i - 1] = node -> keys[i];
         }
         node -> n--;
-        return;
     }
 
-    void remove(int k){
-        int ind = findKey(k);
+    void remove(BTreeNode<T, ORDER>* node, int k){
+        int ind = 0;
+        while(ind < node -> n && k > node -> keys[ind]){
+            ind++;
+        }
+        if(ind < node -> n && node -> keys[ind] == k){
+            if(node -> leaf){
+                removeFromLeaf(node, ind);
+            }
+            else {
+                removeFromNonLeaf(node, ind);
+            }
+        }
+        else {
+            if(node -> leaf){
+                cout << "The key hasn't been found" << endl;
+                return;
+            }
+            bool flag = false;
+            if(node -> n == ind){
+                flag = true;
+            }
+            if(node -> children[ind] -> n < ORDER/2){
+                fill(node, ind);
+            }
+            if(flag && ind > node -> n){
+                remove(node -> children[ind - 1], k);
+            }
+            else {
+                remove(node -> children[ind], k);
+            }
+        }
     }
 public:
     BTree() {
@@ -215,5 +304,15 @@ public:
         }
         remove(root, k);
         // What if root -> n == 0???
+        if(root -> n == 0){
+            BTreeNode<T, ORDER>* temp = root;
+            if(root -> leaf){
+                root = nullptr;
+            }
+            else {
+                root = root -> children[0];
+            }
+            delete temp;
+        }
     }
 };
