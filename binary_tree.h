@@ -124,6 +124,8 @@ private:
         return currentChild -> keys[0];
     }
 
+    // Siblings have an extra key => borrow one key from them.
+    // Siblings don't have any extra key => merge with a sibling 
     void fill(BTreeNode<T, ORDER>* node, int ind){
         if(ind != 0 && (node -> children[ind - 1]->n) >= ORDER/2){
             borrowFromPrev(node, ind);
@@ -131,7 +133,7 @@ private:
         else if(ind != node -> n && (node -> children[ind + 1]->n) >= ORDER/2){
             borrowFromNext(node, ind);
         }
-        else {
+        else {// Merging always happens with the next node.
             if(ind != node -> n){
                 merge(node, ind);
             }
@@ -180,7 +182,8 @@ private:
         sibling -> n -= 1;
         child -> n += 1;
     }
-
+    // Merge the current child with it's next sibling
+    // First transfer the parent's key to the current child and then Transfer the siblings keys and children to the current child
     void merge(BTreeNode<T, ORDER>* node, int ind){
         BTreeNode<T, ORDER>* child = node -> children[ind];
         BTreeNode<T, ORDER>* sibling = node -> children[ind + 1];
@@ -265,6 +268,7 @@ private:
         }
     }
 public:
+    bool showEveryOpn = false;
     BTree() {
         root = new BTreeNode<T, ORDER> (true);
     }
@@ -279,6 +283,9 @@ public:
         }
         else {
             insertNonFull(root, k);
+        }
+        if(showEveryOpn){
+            BFS();
         }
     }
     void traverse(){
@@ -314,6 +321,9 @@ public:
             }
             delete temp;
         }
+        if(showEveryOpn){
+            BFS();
+        }
     }
     void BFS() {
         if(!root){
@@ -340,5 +350,9 @@ public:
             }
             cout << endl << endl;
         }
+        for(int i = 0;i < 40; i++){
+            cout << "-";
+        }
+        cout << endl;
     }
 };
