@@ -66,7 +66,7 @@ private:
             while(i >= 0 && k < x -> keys[i]){
                 i--;
             }
-            i++; // This key should be put in x->children[i].
+            i++; // We are at an index where the key corresponding to that index is >= our current key. This key should be put in x->children[i].
             if(x -> children[i] -> n == ORDER - 1){ // In case of when the subtree root node that contains the child is full, split it and push to the right node.We do this to ensure not going back upwards when the split happens at the leaf.
                 splitChild(x, i);
                 if(k > x -> keys[i]){
@@ -142,7 +142,7 @@ private:
             }
         }
     }
-
+    // Shift the current child's keys and children to the right side by one. Now push the parent to the child. Also, assign the last child of the sibling as the first child of the current child. Adjust the no of children.
     void borrowFromPrev(BTreeNode<T, ORDER>* node, int ind){
         BTreeNode<T, ORDER>* child = node -> children[ind];
         BTreeNode<T, ORDER>* sibling = node -> children[ind - 1];
@@ -162,7 +162,7 @@ private:
         sibling -> n -= 1;
         child -> n += 1;
     }
-
+    // Push the parent to the current child first and then Shift the current sibling's keys and children to the left side by one.
     void borrowFromNext(BTreeNode<T, ORDER>* node, int ind){
         BTreeNode<T, ORDER>* child = node -> children[ind];
         BTreeNode<T, ORDER>* sibling = node -> children[ind + 1];
@@ -183,7 +183,7 @@ private:
         child -> n += 1;
     }
     // Merge the current child with it's next sibling
-    // First transfer the parent's key to the current child and then Transfer the siblings keys and children to the current child
+    // First transfer the parent's key to the current child and then Transfer the siblings keys and children to the current child and then shift the parent's keys and children by one to the left.
     void merge(BTreeNode<T, ORDER>* node, int ind){
         BTreeNode<T, ORDER>* child = node -> children[ind];
         BTreeNode<T, ORDER>* sibling = node -> children[ind + 1];
@@ -198,9 +198,11 @@ private:
                 child -> children[n + i + 1] = sibling -> children[i];
             }
         }
+        // For keys, i starts from ind + 1, meaning that, in the parent if we merge child 0 with child 1, key 1 will be shifted left and key 0 will be lost in the parent and it is already backed up by storing in the left child as shown above.
         for(int i = ind + 1; i < node -> n; i++){
             node -> keys[i - 1] = node -> keys[i];
         }
+        // But in the case of children, we start at ind + 2. because if we merge child 0 with 1, we don't want to lose the child 0 as it holds the merged data of parent and child 1. We will instead lose child 1 as it is already backed
         for(int i = ind + 2; i <= node -> n; i++){
             node -> children[i - 1] = node -> children[i];
         }
@@ -211,7 +213,7 @@ private:
 
     void removeFromNonLeaf(BTreeNode<T, ORDER>* node, int ind){
         T k = node -> keys[ind];
-        if(node -> children[ind]->n >= ORDER/2){
+        if(node -> children[ind]->n >= ORDER/2){ // We make this check as to ensure that the subtree can handle the deletion of the predecessor.
             T pred = getPredecessor(node, ind);
             node -> keys[ind] = pred;
             remove(node -> children[ind], pred);
@@ -236,10 +238,10 @@ private:
 
     void remove(BTreeNode<T, ORDER>* node, int k){
         int ind = 0;
-        while(ind < node -> n && k > node -> keys[ind]){
+        while(ind < node -> n && k > node -> keys[ind]){ //Go to the node that might contain the key.
             ind++;
         }
-        if(ind < node -> n && node -> keys[ind] == k){
+        if(ind < node -> n && node -> keys[ind] == k){ // If key is present in current node, delete it.
             if(node -> leaf){
                 removeFromLeaf(node, ind);
             }
@@ -247,7 +249,7 @@ private:
                 removeFromNonLeaf(node, ind);
             }
         }
-        else {
+        else {                                          // If key is not present in current node, go to that node. and before going, ensure the child node has enough no of children.
             if(node -> leaf){
                 cout << "The key hasn't been found" << endl;
                 return;

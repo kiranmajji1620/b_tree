@@ -17,8 +17,8 @@ int main(){
     t.insert(1);
     t.insert(2);
     t.insert(3);
-    // cout << "Traversal of B Tree : " << endl;
-    // t.traverse();
+    cout << "Traversal of B Tree : " << endl;
+    t.traverse();
     cout << "Removing internal key " << 11 << " demonstrating predecessor" << endl;
     t.remove(11);
     cout << "Removing internal key " << 17 << " demonstrating successor" << endl;
