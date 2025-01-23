@@ -2,7 +2,8 @@
 #include"binary_tree.h"
 
 int main(){
-    BTree<int, 4> t;
+    // Keep the order even just to avoid the violation of rules of a btree while splitting an internal node.
+    BTree<int, 6> t;
     t.showEveryOpn = true;
     t.insert(10);
     t.insert(11);
